@@ -16,7 +16,7 @@ pipeline {
 <body>
     <h1>Apache Test Page</h1>
     <p>This page was deployed by Jenkins!</p>
-    <p>Deployment Time: $(date)</p>
+    <p>Deployment Time: january 17</p>
 </body>
 </html>
 EOF
