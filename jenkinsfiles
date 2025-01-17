@@ -15,7 +15,7 @@ pipeline {
     <title>My Professional Website</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: Display sans, HeadlinerNo.45;
             margin: 0;
             padding: 0;
             background-color: #f4f4f4;
