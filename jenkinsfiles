@@ -22,7 +22,7 @@ pipeline {
         }
         header {
             background-color: #333;
-            color: red;
+            color: blue;
             text-align: center;
             padding: 1rem;
         }
