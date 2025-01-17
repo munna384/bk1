@@ -1,1 +1,76 @@
 
+pipeline {
+    agent any
+    
+    stages {
+        stage('Create HTML') {
+            steps {
+                echo "=== Creating HTML File ==="
+                sh '''
+                    sudo tee /var/www/html/index.html << 'EOF'
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Jenkins Deployed Test Page</title>
+</head>
+<body>
+    <h1>Apache Test Page</h1>
+    <p>This page was deployed by Jenkins!</p>
+    <p>Deployment Time: $(date)</p>
+</body>
+</html>
+EOF
+                '''
+            }
+        }
+        
+        stage('Set Permissions') {
+            steps {
+                echo "=== Setting Permissions ==="
+                sh '''
+                    sudo chown -R apache:apache /var/www/html
+                    sudo chmod -R 755 /var/www/html
+                '''
+            }
+        }
+        
+        stage('Apache Check') {
+            steps {
+                echo "=== Checking Apache Status ==="
+                sh '''
+                    echo "Apache Status:"
+                    systemctl status httpd | grep Active
+                    
+                    echo "\nTesting Website Access:"
+                    curl -I http://localhost
+                '''
+            }
+        }
+        
+        stage('Verify Deployment') {
+            steps {
+                echo "=== Verifying Website Content ==="
+                sh '''
+                    echo "Website Content:"
+                    curl -s http://localhost | grep "Jenkins Deployed"
+                    
+                    if [ $? -eq 0 ]; then
+                        echo "Website deployed successfully!"
+                    else
+                        echo "Website deployment verification failed"
+                        exit 1
+                    fi
+                '''
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo 'Website deployed and verified successfully'
+        }
+        failure {
+            echo 'Website deployment failed'
+        }
+    }
+}
