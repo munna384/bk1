@@ -22,7 +22,7 @@ pipeline {
         }
         header {
             background-color: #333;
-            color: white;
+            color: blue;
             text-align: center;
             padding: 1rem;
         }
@@ -56,7 +56,7 @@ pipeline {
     <nav>
         <a href="#home">Home</a>
         <a href="#about">About</a>
-        <a href="#services">Services</a>
+        <a href="#services">Learn</a>
         <a href="#contact">Contact</a>
     </nav>
     <div class="container">
