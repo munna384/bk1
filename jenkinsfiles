@@ -34,6 +34,34 @@ pipeline {
             }
         }
     }
+post {
+        success {
+            emailext (
+                subject: "Pipeline SUCCESS: ${currentBuild.fullDisplayName}",
+                body: """
+                    Pipeline has been successfully deployed!
+                    
+                    Job: ${env.JOB_NAME}
+                    Build Number: ${env.BUILD_NUMBER}
+                    Build URL: ${env.BUILD_URL}
+                """,
+                to: 'raj.munna384@gmail.com'
+            )
+        }
+        failure {
+            emailext (
+                subject: "Pipeline FAILED: ${currentBuild.fullDisplayName}",
+                body: """
+                    Pipeline deployment failed!
+                    
+                    Job: ${env.JOB_NAME}
+                    Build Number: ${env.BUILD_NUMBER}
+                    Build URL: ${env.BUILD_URL}
+                """,
+                to: 'raj.munna384@gmail.com'
+            )
+        }
+    }
     post {
         success {
             echo 'Website deployed successfully'
