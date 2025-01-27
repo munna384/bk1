@@ -1,92 +1,101 @@
 pipeline {
-    agent any
-    environment {
-        JENKINS_URL = sh(script: 'curl http://169.254.169.254/latest/meta-data/public-ipv4', returnStdout: true).trim()
-    }
-    stages {
-        stage('Git Checkout') {
-            steps {
-                git branch: 'main', 
-                    url: 'https://github.com/munna384/bk1.git'
-            }
-        }
-    stage('Email Approval') {
-            steps {
-                emailext (
-                    subject: "Pipeline Approval Needed: ${currentBuild.fullDisplayName}",
-                    body: """
-                        Please review and approve the deployment:
-                        
-                        Approve here: http://${JENKINS_URL}:8080/job/${env.JOB_NAME}/${env.BUILD_NUMBER}/input
-                        
-                        Job: ${env.JOB_NAME}
-                        Build: ${env.BUILD_NUMBER}
-                    """,
-                    to: 'raj.munna384@gmail.com'
-                )
-                
-                timeout(time: 5, unit: 'MINUTES') {
-                    input message: 'Please approve deployment', submitter: 'admin'
-                }
-            }
-        }
-        stage('Deploy HTML') {
-            steps {
-                sh 'sudo cp index.html /var/www/html/'
-            }
-        }
-        stage('Set Permissions') {
-            steps {
-                echo "=== Setting Permissions ==="
-                sh '''
-                    sudo chown -R apache:apache /var/www/html
-                    sudo chmod -R 755 /var/www/html
-                '''
-            }
-        }
-        stage('Verify Deployment') {
-            steps {
-                echo "=== Verifying Website ==="
-                sh '''
-                    echo "Checking Apache Status:"
-                    systemctl status httpd | grep Active
-                    echo "\nTesting Website Access:"
-                    curl -I http://localhost
-                '''
-            }
-        }
-    }
-    
-    post {
-        success {
-            emailext (
-                subject: "Pipeline SUCCESS: ${currentBuild.fullDisplayName}",
-                body: """
-                    Pipeline has been successfully deployed!
-                    
-                    Job: ${env.JOB_NAME}
-                    Build Number: ${env.BUILD_NUMBER}
-                    Build URL: ${env.BUILD_URL}
-                    Triggered by: ${currentBuild.getBuildCauses()[0].userName}
-                    Approved by: ${MUNNA}
-                """,
-                to: 'raj.munna384@gmail.com'
-            )
-            echo 'Website deployed successfully'
-        }
-        failure {
-            emailext (
-                subject: "Pipeline FAILED: ${currentBuild.fullDisplayName}",
-                body: """
-                    Pipeline deployment failed!
-                    
-                    Job: ${env.JOB_NAME}
-                    Build Number: ${env.BUILD_NUMBER}
-                    Build URL: ${env.BUILD_URL}
-                """,
-                to: 'raj.munna384@gmail.com'
-            )
-            echo 'Website deployment failed'
-        }
-    }
+   agent any
+   environment {
+       JENKINS_URL = sh(script: 'curl http://169.254.169.254/latest/meta-data/public-ipv4', returnStdout: true).trim()
+       APPROVER = ''
+   }
+   stages {
+       stage('Git Checkout') {
+           steps {
+               git branch: 'main', 
+                   url: 'https://github.com/munna384/bk1.git'
+           }
+       }
+       stage('Email Approval') {
+           steps {
+               script {
+                   emailext (
+                       subject: "Pipeline Approval Needed: ${currentBuild.fullDisplayName}",
+                       body: """
+                           Please review and approve the deployment:
+                           
+                           Approve here: http://${JENKINS_URL}:8080/job/${env.JOB_NAME}/${env.BUILD_NUMBER}/input
+                           
+                           Job: ${env.JOB_NAME}
+                           Build: ${env.BUILD_NUMBER}
+                       """,
+                       to: 'raj.munna384@gmail.com'
+                   )
+                   
+                   timeout(time: 5, unit: 'MINUTES') {
+                       def approval = input(
+                           message: 'Please approve deployment',
+                           submitter: 'admin',
+                           parameters: [string(defaultValue: '', description: 'Approver Name', name: 'APPROVER_NAME')]
+                       )
+                       env.APPROVER = approval['APPROVER_NAME']
+                   }
+               }
+           }
+       }
+       stage('Deploy HTML') {
+           steps {
+               sh 'sudo cp index.html /var/www/html/'
+           }
+       }
+       stage('Set Permissions') {
+           steps {
+               echo "=== Setting Permissions ==="
+               sh '''
+                   sudo chown -R apache:apache /var/www/html
+                   sudo chmod -R 755 /var/www/html
+               '''
+           }
+       }
+       stage('Verify Deployment') {
+           steps {
+               echo "=== Verifying Website ==="
+               sh '''
+                   echo "Checking Apache Status:"
+                   systemctl status httpd | grep Active
+                   echo "\nTesting Website Access:"
+                   curl -I http://localhost
+               '''
+           }
+       }
+   }
+   
+   post {
+       success {
+           emailext (
+               subject: "Pipeline SUCCESS: ${currentBuild.fullDisplayName}",
+               body: """
+                   Pipeline has been successfully deployed!
+                   
+                   Job: ${env.JOB_NAME}
+                   Build Number: ${env.BUILD_NUMBER}
+                   Build URL: ${env.BUILD_URL}
+                   Triggered by: ${currentBuild.getBuildCauses()[0].userName}
+                   Approved by: ${env.APPROVER}
+               """,
+               to: 'raj.munna384@gmail.com'
+           )
+           echo 'Website deployed successfully'
+       }
+       failure {
+           emailext (
+               subject: "Pipeline FAILED: ${currentBuild.fullDisplayName}",
+               body: """
+                   Pipeline deployment failed!
+                   
+                   Job: ${env.JOB_NAME}
+                   Build Number: ${env.BUILD_NUMBER}
+                   Build URL: ${env.BUILD_URL}
+                   Triggered by: ${currentBuild.getBuildCauses()[0].userName}
+               """,
+               to: 'raj.munna384@gmail.com'
+           )
+           echo 'Website deployment failed'
+       }
+   }
 }
