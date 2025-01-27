@@ -11,12 +11,6 @@ pipeline {
                 sh 'sudo cp index.html /var/www/html/'
             }
         }
-    }
-}
-                '''
-            }
-        }
-        
         stage('Set Permissions') {
             steps {
                 echo "=== Setting Permissions ==="
@@ -26,21 +20,19 @@ pipeline {
                 '''
             }
         }
-        
         stage('Verify Deployment') {
             steps {
                 echo "=== Verifying Website ==="
                 sh '''
                     echo "Checking Apache Status:"
                     systemctl status httpd | grep Active
-                    
+
                     echo "\nTesting Website Access:"
                     curl -I http://localhost
                 '''
             }
         }
     }
-    
     post {
         success {
             echo 'Website deployed successfully'
