@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        JENKINS_URL = sh(script: 'curl http://18.234.161.213/latest/meta-data/public-ipv4', returnStdout: true).trim()
+        JENKINS_URL = sh(script: 'curl http://169.254.169.254/latest/meta-data/public-ipv4', returnStdout: true).trim()
     }
     stages {
         stage('Git Checkout') {
@@ -17,7 +17,7 @@ pipeline {
                     body: """
                         Please review and approve the deployment:
                         
-                        Approve here:  http://18.234.161.213:8080/job/${env.JOB_NAME}/${env.BUILD_NUMBER}/input
+                        Approve here: http://${JENKINS_URL}:8080/job/${env.JOB_NAME}/${env.BUILD_NUMBER}/input
                         
                         Job: ${env.JOB_NAME}
                         Build: ${env.BUILD_NUMBER}
@@ -26,16 +26,7 @@ pipeline {
                 )
                 
                 timeout(time: 5, unit: 'MINUTES') {
-                    script {
-                        def approval = input(
-                            message: 'Please approve deployment',
-                            submitter: 'admin,approver',
-                            parameters: [
-                                string(name: 'MUNNA', defaultValue: '', description: 'bhojaraj-Devops')
-                            ]
-                        )
-                        APPROVED_BY = approval['MUNNA']
-                    }
+                    input message: 'Please approve deployment', submitter: 'admin'
                 }
             }
         }
