@@ -3,7 +3,9 @@ pipeline {
     stages {
         stage('Git Checkout') {
             steps {
-                git 'https://github.com/munna384/bk1.git'
+                git branch: 'main', 
+                    credentialsId: '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',
+                    url: 'https://github.com/munna384/bk1.git'
             }
         }
         stage('Deploy HTML') {
