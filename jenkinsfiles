@@ -27,14 +27,14 @@ pipeline {
                 sh '''
                     echo "Checking Apache Status:"
                     systemctl status httpd | grep Active
-
                     echo "\nTesting Website Access:"
                     curl -I http://localhost
                 '''
             }
         }
     }
-post {
+    
+    post {
         success {
             emailext (
                 subject: "Pipeline SUCCESS: ${currentBuild.fullDisplayName}",
@@ -47,6 +47,7 @@ post {
                 """,
                 to: 'raj.munna384@gmail.com'
             )
+            echo 'Website deployed successfully'
         }
         failure {
             emailext (
@@ -60,13 +61,6 @@ post {
                 """,
                 to: 'raj.munna384@gmail.com'
             )
-        }
-    }
-    post {
-        success {
-            echo 'Website deployed successfully'
-        }
-        failure {
             echo 'Website deployment failed'
         }
     }
