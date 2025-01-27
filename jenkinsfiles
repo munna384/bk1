@@ -7,13 +7,35 @@ pipeline {
                     url: 'https://github.com/munna384/bk1.git'
             }
         }
-    stage('Approval Required') {
-           steps {
-               timeout(time: 5, unit: 'MINUTES') {
-                   input message: 'Proceed with deployment?', ok: 'Deploy'
-               }
-           }
-       }
+    stage('Email Approval') {
+            steps {
+                emailext (
+                    subject: "Pipeline Approval Needed: ${currentBuild.fullDisplayName}",
+                    body: """
+                        Please review and approve the deployment:
+                        
+                        Approve here: ${env.BUILD_URL}input
+                        
+                        Job: ${env.JOB_NAME}
+                        Build: ${env.BUILD_NUMBER}
+                    """,
+                    to: 'raj.munna384@gmail.com'
+                )
+                
+                timeout(time: 5, unit: 'MINUTES') {
+                    script {
+                        def approval = input(
+                            message: 'Please approve deployment',
+                            submitter: 'admin,approver',
+                            parameters: [
+                                string(name: 'MUNNA', defaultValue: '', description: 'bhojaraj-Devops')
+                            ]
+                        )
+                        APPROVED_BY = approval['MUNNA']
+                    }
+                }
+            }
+        }
         stage('Deploy HTML') {
             steps {
                 sh 'sudo cp index.html /var/www/html/'
@@ -51,6 +73,8 @@ pipeline {
                     Job: ${env.JOB_NAME}
                     Build Number: ${env.BUILD_NUMBER}
                     Build URL: ${env.BUILD_URL}
+                    Triggered by: ${currentBuild.getBuildCauses()[0].userName}
+                    Approved by: ${MUNNA}
                 """,
                 to: 'raj.munna384@gmail.com'
             )
