@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        JENKINS_URL = sh(script: 'curl http://18.234.161.213/latest/meta-data/public-ipv4', returnStdout: true).trim()
+        JENKINS_URL = sh(script: 'curl http://169.254.169.254/latest/meta-data/public-ipv4', returnStdout: true).trim()
     }
     stages {
         stage('Git Checkout') {
