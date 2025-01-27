@@ -19,7 +19,7 @@ pipeline {
                        body: """
                            Please review and approve the deployment:
                            
-                           Approve here: http://${JENKINS_URL}:8080/job/${env.JOB_NAME}/${env.BUILD_NUMBER}/input
+                           Approve here: http://18.234.161.213:8080/job/${env.JOB_NAME}/${env.BUILD_NUMBER}/input
                            
                            Job: ${env.JOB_NAME}
                            Build: ${env.BUILD_NUMBER}
