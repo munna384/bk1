@@ -1,7 +1,7 @@
 pipeline {
     agent any
         environment {
-        JENKINS_URL = '44.201.127.222'  // Your current EC2 IP address
+        JENKINS_URL = '44.211.172.97'  // Your current EC2 IP address
     }
     stages {
         stage('Git Checkout') {
